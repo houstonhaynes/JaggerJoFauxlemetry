@@ -10,7 +10,7 @@ open Avalonia.Themes.Fluent
 /// or handle Life Cycle events of your application
 type App() =
     inherit Application()
-    
+
     override this.Initialize() =
         this.Styles.Add (FluentTheme(baseUri = null, Mode = FluentThemeMode.Dark))
         this.Styles.Load "avares://JaggerJoFauxlemetry/Styles.xaml"
@@ -20,27 +20,27 @@ type App() =
         | :? IClassicDesktopStyleApplicationLifetime as desktopLifetime ->
             desktopLifetime.MainWindow <- Shell.MainWindow()
         | _ -> ()
-        
-                
-           
+
+
+
 module Program =
-    
-    [<EntryPoint>]    
+
+    [<EntryPoint>]
     let main (args: string []) =
         AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .UseSkia()
             .StartWithClassicDesktopLifetime(args) |> ignore
-            
+
         let task =
             async {
                 while true do
                     do Thread.Sleep(1000)
                     printfn "loop"
-                    while Counter.volume > 0 do 
-                        createMomentForCompany Counter.volume |> ignore
+                    while volume > 0 do
+                        createMomentForCompany |> ignore
             }
-                
+
         Async.StartImmediate(task)
 
         0

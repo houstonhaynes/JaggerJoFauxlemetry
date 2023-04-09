@@ -27,7 +27,7 @@ module EventGenerator =
     type RawDataModel() =
 
         [<RedisIdField>] [<Indexed>]
-        member val Id = "" with get, set 
+        member val Id = "" with get, set
 
         [<Indexed(Aggregatable = true)>]
         member val epoch_timestamp : int64 = 0 with get, set
@@ -35,7 +35,7 @@ module EventGenerator =
         [<Indexed>]
         member val EventTime = "" with get, set
 
-        [<Searchable(Aggregatable = true)>]        
+        [<Searchable(Aggregatable = true)>]
         member val cst_id  = "" with get, set
 
         [<Searchable(Aggregatable = true)>]
@@ -64,18 +64,19 @@ module EventGenerator =
 
         [<Searchable(Aggregatable = true)>]
         member val malware = false with get, set
-    
+
     [<JsonFSharpConverter>]
     type Example = EventRecord
 
     let environment = "redis://localhost:6379"
     let provider = RedisConnectionProvider(environment)
     let connection = provider.Connection
-    
+
     let mutable currentTime = DateTime.Now.ToString("hh:mm:ss.fff")
     let customer = "DAD86E169793491181B523C8D458AE32"
     let rewind = 15
-                
+
+    let volume = 1
     let rec createMomentForCompany =
         async {
             // set up random functions
@@ -84,53 +85,53 @@ module EventGenerator =
             // build an array of randomized time values millis (0 padded)
             let randomMillis =
                 [| for i in 0 .. (volume-1)->
-                         rnd.Next(1000).ToString().PadLeft(3, '0') 
+                         rnd.Next(1000).ToString().PadLeft(3, '0')
                 |]
-            
+
             // build an array of fake timestamps from the above arrays and sort chronologically (as array of string)
             let randomTimeStamps =
                 let DateTimeSecond = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss")
                 [| for i in 0 .. (volume-1)->
                          DateTimeSecond
                          + "."
-                         + randomMillis[i] 
+                         + randomMillis[i]
                 |]
-            
+
             // Prevents the creating of an unnecessary array
             randomTimeStamps
             |> Array.sortInPlace
-            
+
             let epoch_timestamps : int64 array =
-                [| for i in 0 .. (volume-1) -> 
+                [| for i in 0 .. (volume-1) ->
                     DateTimeOffset(DateTime.Parse(randomTimeStamps[i]).ToUniversalTime()).ToUnixTimeMilliseconds()
                 |]
 
             // TODO: This should be a lookup of some sort - by country
             let srcIpFirstOctets = "160.72"
-            
+
             let destIpFirstOctets = "11.18"
-            
+
             // build an array of randomized octets (3, 4) for the Source and Destination IPv4
             let randomSrcOctets3 =
                 [| for i in 0 .. (volume-1)->
-                         rnd.Next(256).ToString().PadLeft(3, '0') 
+                         rnd.Next(256).ToString().PadLeft(3, '0')
                 |]
-                
+
             let randomSrcOctets4 =
                 [| for i in 0 .. (volume-1)->
-                         rnd.Next(256).ToString().PadLeft(3, '0') 
+                         rnd.Next(256).ToString().PadLeft(3, '0')
                 |]
 
             let randomDestOctets3 =
                 [| for i in 0 .. (volume-1)->
-                         rnd.Next(256).ToString().PadLeft(3, '0') 
+                         rnd.Next(256).ToString().PadLeft(3, '0')
                 |]
 
             let randomDestOctets4 =
                 [| for i in 0 .. (volume-1)->
-                         rnd.Next(256).ToString().PadLeft(3, '0') 
+                         rnd.Next(256).ToString().PadLeft(3, '0')
                 |]
-        
+
             // build an array of fake IPv4s from constants and arrays above
             let randomSrcIPv4 =
                 [| for i in 0 .. (volume-1)->
@@ -138,7 +139,7 @@ module EventGenerator =
                          + "."
                          + randomSrcOctets3[i]
                          + "."
-                         + randomSrcOctets4[i] 
+                         + randomSrcOctets4[i]
                 |]
 
             let randomDestIPv4 =
@@ -147,7 +148,7 @@ module EventGenerator =
                          + "."
                          + randomDestOctets3[i]
                          + "."
-                         + randomDestOctets4[i]       
+                         + randomDestOctets4[i]
                 |]
 
             let randomSrcPort =
@@ -155,7 +156,7 @@ module EventGenerator =
                          let randomSrcPort = rnd.Next (1, 101)
                          match randomSrcPort with
                          | i when i > 90 -> rnd.Next(1025, 65535).ToString()
-                         | _ -> "80" 
+                         | _ -> "80"
                 |]
 
             let randomDestPort =
@@ -163,9 +164,9 @@ module EventGenerator =
                          let randomDestPort = rnd.Next (1, 101)
                          match randomDestPort with
                          | i when i > 90 -> rnd.Next(1025, 65535).ToString()
-                         | _ -> "80" 
+                         | _ -> "80"
                 |]
-             
+
             // generate array of countries - bias is built from Cloudflare DDoS source country top 10
             let randomCC =
                 [| for i in 0 .. (volume-1)->
@@ -173,7 +174,7 @@ module EventGenerator =
                          match randomCountry with
                          | _ -> "RU"
                 |]
-                
+
             // Generate VPN entries for 30% of elements using shuffleR function (and taking top [head] value)
             let VpnClients =
                 [| for i in 0 .. (volume-1)->
@@ -188,8 +189,8 @@ module EventGenerator =
                          | i when i > 24 && i <= 27 -> "foxyproxy"
                          | i when i > 27 && i <= 30 -> "surfshark"
                          | _ -> "BLANK"
-                |] 
-            
+                |]
+
             // generate proxy values - use VpnClients value if present, otherwise create a new value
             let ProxyClients =
                 [| for i in 0 .. (volume-1)->
@@ -211,7 +212,7 @@ module EventGenerator =
                          else
                              "BLANK"
                 |]
-    
+
             // Tor values [30%] use VpnClients or ProxyClients value if present, otherwise create new
             let TorClients =
                 [| for i in 0 .. (volume-1)->
@@ -246,7 +247,7 @@ module EventGenerator =
                          | i when i >= 79 && i <= 99 -> "TRUE"
                          | _ -> "FALSE"
                 |]
-    
+
             // create full JSON serializable array
             let DayRecords =
                 [| for i in 0 .. (volume-1)->
@@ -273,14 +274,14 @@ module EventGenerator =
                 let dateTimeNowSeconds = DateTimeOffset(DateTime.Now).ToUnixTimeSeconds()
                 let eventExpirationInSeconds = DateTimeOffset(DateTime.Parse(event.EventTime).AddDays(TTLValue)).ToUnixTimeSeconds()
                 let eventTtl = eventExpirationInSeconds - dateTimeNowSeconds
-                connection.Execute("EXPIRE", newKey, eventTtl.ToString())       
+                connection.Execute("EXPIRE", newKey, eventTtl.ToString())
 
             // serialize JSON
             let options = JsonSerializerOptions()
             options.Converters.Add(JsonFSharpConverter())
-            
+
             DayRecords
                 |> Array.map serializeRecord
                 |> ignore
-    
+
         }
