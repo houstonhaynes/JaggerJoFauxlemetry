@@ -5,6 +5,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <Content Include=".editorconfig" />
         <Compile Include="Counter.fs" />
         <Compile Include="EventGenerator.fs" />
         <Compile Include="About.fs" />
